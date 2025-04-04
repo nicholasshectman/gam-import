@@ -1,2 +1,12 @@
 # gam-import
 A set of scripts for importing .alias and/or mailman lists into Google Workspace via gam, and for verifying imports.
+
+When importing mail forwards from sendmail and/or mailman to Google Workspace, the 'gam' command-line interface is helpful for avoiding errors in large, complex systems.  These tools will help prepare your existing infrastructure so that it can be imported into Google Workspace, generate command-line invocations to do so, and aid in veritying that the resulting configuration matches the source configuration.  If there is a prolonged transition period during which maintenance is being done to both configurations, these tools can help ensure that they stay in sync.
+These tools are intended to be used in conjunction with tools like diff, make, and perhaps an organization-specific translation script.
+
+In roughly the order that the commands might be run:
+
+* The 'process-mailman' script assumes that you are a customer of a mailman service rather than the owner of the machine, and thus may not have direct access to the mailman configs.  It works directly with the monthly mailman administrative email format and expects a precursor tool to gather and format the mailing list subscription lists accordingly.  It turns this data into a .alias file format.  Other tools work best when the output of this script has been combined with your .alias file if you are planning to merge list processing and non-list email forwards into your Google Workspace.
+* The 'alias-check' script looks for email configurations that will not import directly into Workspace.  For instance, chains of single forwards, when imported into Workspace and then reexported, will have the chains resolved and show each address along the chain as resolving directly to the final recipient.  Before performing an import, updating forwards to eliminate these conditions will make the verification of the import easier.
+* The 'generate-gam-commands.py' script takes an alias file and generates a set of 'gam' commands to create that configuration in Workspace.  For very large configurations you might want to split this output into separate pieces so that the import can be parallelized.
+* The 'gam-aliases' script outputs the configuration in .alias format so that you can compare it to the source data and check for mismatches from error conditions, preexisting config, and the like.  It's also useful for managing incremental migrations.
