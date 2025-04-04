@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 #Python 3.8.9
-#test.py
 
 # generate commands to run through GAM
 # to make a Google Workspace match an alias file
