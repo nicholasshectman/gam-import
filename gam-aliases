@@ -1,0 +1,11 @@
+#!/bin/bash
+# export the email configuration of a Google Workspace in .alias format, for comparison to the source aliases after import
+{
+  gam print groups members |
+    tail +2 |
+    sed -e 's/\(,[01],\)\(.*\)/\1"\2"/' -e 's/,[0-9]*,./  /' |
+    tr '\n"' ',\n' |
+    sed -e 's/^,//' -e 's/,/, /g'
+  gam print aliases | tail +2 | sed -e 's/,/  /' -e 's/,.*//'
+  gam print users emails | tail +2 | sed -e 's/,,/  /' -e 's/,.*//'
+} | sort

@@ -1,0 +1,30 @@
+#!/bin/bash
+# A script to transform captured mailman membership lists to an alias format
+#
+# The input file should be in a format like this:
+# mailing-list@example.com	explanatory text (note tab separation)
+# Firstname Lastname <address1@gmail.com>
+# "A. B. Lastname " <address2@example.com>
+# "Firstname \"Nickname\" Lastname" <address3@comcast.net>
+# address4@example.org
+# mailing-list2@example.com	more explanatory text
+# ...
+#
+# Tabs should appear only immediately after mailing list addresses.
+#
+# The output file will render that as:
+# mailing-list@example.com	address1@gmail.com, address2@example.com, address3@comcast.net, address4@example.org
+# mailing-list2@example.com	...
+#
+# No facility is made here for filtering post-only addresses or the like.
+#
+# Bugs: real names with < or > in them will confuse the script, even in quotes.
+
+sed \
+  -e 's/.*<//' \
+  -e 's/>//' \
+  -e 's/ //' \
+  -e 's/$/,/' \
+  -e 's/\(.*\)\t.*/ \1\t/' \
+  $1 | tr '\n ' ' \n' | sed 's/, $//' | tail +2
+echo

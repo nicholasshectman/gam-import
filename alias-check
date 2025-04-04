@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+# Find email forwards in a .alias file that won't import into Google Workspace.
+# Problem one: aliases that go to missing addresses in the file
+# Problem two: single aliases that go to other single local aliases
+# This script assumes you've already fully qualified all of the addresses
+# It takes a filename for the aliases file and a domain name to filter on
+#   representing the domain the aliases file represents.
+
+# usage:
+# alias-check [aliasfile] [domain]
+
+# example:
+# alias-check /etc/aliases example.com
+
+use strict;
+use warnings;
+
+my ($aliasfile, $domain) = @ARGV;
+my %aliases;
+open(FH, '<', $aliasfile);
+while (<FH>) {
+  my ($key, $values) = split(/\s+/, $_, 2);
+  # remove trailing whitespace for benefit of further processing
+  $values =~ s/\s+$//;
+  $aliases{$key} = $values;
+}
+
+while (my ($key, $values) = each(%aliases)) {
+  my @split_values = split(/,\s+/, $values);
+  my $dead = 0;
+  # check for dead addresses being forwarded to
+  foreach my $value (@split_values) {
+    if ($value =~ /\@$domain$/ && not exists($aliases{$value})) {
+      print "dead alias found: $key  $value\n";
+      $dead = 1;
+    }
+  }
+  # check for local daisy chains
+  my $size = @split_values;
+  if ($dead == 0 && $size == 1 && $values =~ /\@$domain$/) {
+    my $chained_values = $aliases{$values};
+    if ($chained_values =~ /\@$domain$/) {
+      if (not $chained_values =~ /,/) {
+        print "daisy chain found: $key  $values  $chained_values\n";
+      }
+    }
+  }
+}
